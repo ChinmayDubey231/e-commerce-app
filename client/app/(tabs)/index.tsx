@@ -5,7 +5,7 @@ import ProductCart from "@/components/ProductCart";
 import { CATEGORIES } from "@/constants";
 import { Product } from "@/constants/types";
 import { useRouter } from "expo-router";
-import React, { lazy, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -71,6 +71,8 @@ export default function Home() {
                   resizeMode="cover"
                 />
 
+                <View className="inset-0 absolute bg-black/40" />
+
                 <View className="absolute bottom-4 left-4 z-10">
                   <Text className="text-white text-2xl font-bold">
                     {banner.title}
@@ -84,8 +86,6 @@ export default function Home() {
                     </Text>
                   </TouchableOpacity>
                 </View>
-
-                <View className="inset-0 absolute bg-black/40" />
               </View>
             ))}
           </ScrollView>
