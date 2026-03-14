@@ -1,19 +1,39 @@
-import { dummyUser } from "@/assets/assets";
 import Header from "@/components/Header";
 import { COLORS, PROFILE_MENU } from "@/constants";
+// 1. Import useUser and useAuth instead of useClerk
+import { useAuth, useUser } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Profile() {
-  const { user } = { user: dummyUser };
+  // 2. Use the correct reactive hooks
+  const { user, isLoaded } = useUser();
+  const { signOut } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
+    await signOut();
     router.replace("/sign-in");
   };
+
+  // 3. Show a loading state while Clerk is hydrating the session
+  if (!isLoaded) {
+    return (
+      <SafeAreaView className="flex-1 bg-surface justify-center items-center">
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={["top"]}>
@@ -28,7 +48,7 @@ export default function Profile() {
         }
       >
         {!user ? (
-          //Guest User Screen
+          // Guest User Screen
           <View className="items-center w-full">
             <View className="w-28 h-28 rounded-full bg-gray-200 items-center justify-center mb-6">
               <Ionicons name="person" size={40} color={COLORS.secondary} />
@@ -50,7 +70,7 @@ export default function Profile() {
           </View>
         ) : (
           <>
-            {/*User Profile Screen*/}
+            {/* User Profile Screen */}
             <View className="items-center mb-8">
               <View className="mb-3">
                 <Image
@@ -77,7 +97,8 @@ export default function Profile() {
                 </TouchableOpacity>
               )}
             </View>
-            {/*Menu */}
+
+            {/* Menu */}
             <View className="bg-white rounded-xl border-gray-100/75 p-2 mb-4">
               {PROFILE_MENU.map((item, index) => (
                 <TouchableOpacity
@@ -105,12 +126,12 @@ export default function Profile() {
               ))}
             </View>
 
-            {/*Logout Button */}
+            {/* Logout Button */}
             <TouchableOpacity
-              onPress={() => router.push(handleLogout)}
+              onPress={handleLogout}
               className="flex-row items-center justify-center p-4"
             >
-              <Text className="text-red-500 font-bold text-lg ml-2 bg-red-200 px-40 py-3 rounded-full   ">
+              <Text className="text-red-500 font-bold text-lg ml-2 bg-red-200 px-40 py-3 rounded-full">
                 Logout
               </Text>
             </TouchableOpacity>
