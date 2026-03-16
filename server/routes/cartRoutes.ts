@@ -14,7 +14,7 @@ const CartRouter = express.Router();
 CartRouter.get("/", protect, getCart);
 
 //Add product to cart
-CartRouter.post("/aa", protect, addToCart);
+CartRouter.post("/", protect, addToCart);
 
 //Update cart quantity
 CartRouter.put("/item/:productId", protect, updateCartItem);

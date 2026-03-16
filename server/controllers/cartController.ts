@@ -154,7 +154,6 @@ export const clearCart = async (req: Request, res: Response) => {
       cart.items = [];
       cart.totalAmount = 0;
       await cart.save();
-      res.json({ success: true, message: "Cart cleared" });
     }
     res.json({ success: true, message: "Cart cleared" });
   } catch (error: any) {

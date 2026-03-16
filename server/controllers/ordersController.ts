@@ -152,7 +152,8 @@ export const getAllOrders = async (req: Request, res: Response) => {
       .populate("user", "name email")
       .populate("items.product", "name")
       .sort("-createdAt")
-      .skip((Number(page) - 1) * Number(limit));
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit));
 
     res.json({
       success: true,

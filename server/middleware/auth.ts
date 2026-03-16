@@ -12,7 +12,10 @@ export const protect = async (
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    let user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({ clerkId: userId });
+    if (!user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
     req.user = user;
     next();
   } catch (error) {
@@ -23,13 +26,11 @@ export const protect = async (
 
 export const authorize = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!roles.includes(req.user.role)) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "User role not authorized to access this route.",
-        });
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "User role not authorized to access this route.",
+      });
     }
     next();
   };
