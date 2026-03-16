@@ -1,6 +1,6 @@
 import { verifyWebhook } from "@clerk/express/webhooks";
 import { Request, Response } from "express";
-import User from "../modals/User.js";
+import User from "../models/User.js";
 
 export const clerkWebhook = async (req: Request, res: Response) => {
   try {
@@ -18,7 +18,11 @@ export const clerkWebhook = async (req: Request, res: Response) => {
       };
 
       if (user) {
-        await User.findOneAndUpdate({ clerkId: evt.data.id }, userData);
+        const result = await User.findOneAndUpdate(
+          { clerkId: evt.data.id },
+          userData,
+          { new: true, upsert: true },
+        );
       } else {
         await User.create(userData);
       }
