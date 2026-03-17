@@ -8,12 +8,12 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Product } from "@/constants/types";
-import { dummyProducts } from "@/assets/assets";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants";
 import ProductCart from "@/components/ProductCart";
+import api from "@/constants/api";
 
 export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,24 +23,24 @@ export default function Shop() {
   const [hasMore, setHasMore] = useState(true);
 
   const fetchProducts = async (pageNumber = 1) => {
-    if (pageNumber === 1) {
-      setLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
+    if (pageNumber === 1) setLoading(true);
+    else setLoadingMore(true);
 
     try {
-      const start = (pageNumber - 1) * 10;
-      const end = start + 10;
-      const paginatedData = dummyProducts.slice(start, end);
+      const res = await api.get("/products", {
+        params: { page: pageNumber, limit: 10 },
+      });
+
+      const newProducts = res.data.data;
+      const pagination = res.data.pagination;
 
       if (pageNumber === 1) {
-        setProducts(paginatedData);
+        setProducts(newProducts);
       } else {
-        setProducts((prev) => [...prev, ...paginatedData]);
+        setProducts((prev) => [...prev, ...newProducts]);
       }
 
-      setHasMore(end < dummyProducts.length);
+      setHasMore(pagination.page < pagination.pages);
       setPage(pageNumber);
     } catch (error) {
       console.error("Error fetching products:", error);

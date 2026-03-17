@@ -7,20 +7,44 @@ export const protect = async (
   next: NextFunction,
 ) => {
   try {
-    const { userId } = await req.auth();
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ success: false, message: "No token" });
+    }
+
+    // Manually verify the JWT token directly
+    const { verifyToken } = await import("@clerk/backend");
+
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY!,
+    }).catch((err) => {
+      console.error("❌ verifyToken failed:", err.message); // will show "token expired" etc.
+      return null;
+    });
+    if (!payload) {
+      return res.status(401).json({ success: false, message: "Invalid token" });
+    }
+
+    const userId = payload.sub;
+
     if (!userId) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+      return res.status(401).json({ success: false, message: "Invalid token" });
     }
 
     const user = await User.findOne({ clerkId: userId });
     if (!user) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not synced" });
     }
+
     req.user = user;
     next();
-  } catch (error) {
-    console.error("Auth error", error);
-    res.status(500).json({ success: false, message: "Authentication failed" });
+  } catch (error: any) {
+    console.error("💀 Auth Failed:", error.message);
+    res.status(401).json({ success: false, message: "Unauthorized" });
   }
 };
 

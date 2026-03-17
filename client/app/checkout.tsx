@@ -15,9 +15,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { COLORS } from "@/constants";
 import Header from "@/components/Header";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@clerk/expo";
+import api from "@/constants/api";
 
 export default function Checkout() {
-  const { cartTotal } = useCart();
+  const { getToken } = useAuth();
+  const { cartTotal, clearCart } = useCart();
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
@@ -31,16 +34,34 @@ export default function Checkout() {
   const total = cartTotal + shipping + tax;
 
   const fetchAddress = async () => {
-    const addrList = dummyAddress;
-    if (addrList.length > 0) {
-      //Find default or first
-      const def = addrList.find((a: any) => a.isDefault) || addrList[0];
-      setSelectedAddress(def as Address);
+    try {
+      const token = await getToken();
+      const data = await api.get("/addresses", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const addrList = data.data;
+
+      if (addrList.length > 0) {
+        const def =
+          addrList.find((addr: Address) => addr.isDefault) || addrList[0];
+        setSelectedAddress(def);
+      }
+    } catch (error: any) {
+      console.error("Error fetching address:", error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to Fetch Address",
+        text2: error.response?.data?.message || "Something went wrong",
+      });
+    } finally {
+      setPageLoading(false);
     }
-    setPageLoading(false);
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!selectedAddress) {
       Toast.show({
         type: "error",
@@ -58,7 +79,39 @@ export default function Checkout() {
       });
     }
     //Cash on delivery
-    router.push("/orders");
+    setLoading(true);
+    try {
+      const payload = {
+        shippingAddress: selectedAddress,
+        notes: "Placed via App",
+        paymentMethod: "cash",
+      };
+      const token = await getToken();
+      const { data } = await api.post("/orders", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (data.success) {
+        await clearCart();
+        Toast.show({
+          type: "success",
+          text1: "Order Placed",
+          text2: "Your order has been placed successfully",
+        });
+        router.replace("/orders");
+      }
+    } catch (error: any) {
+      console.error("Error placing order:", error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to Place Order",
+        text2: error.response?.data?.message || "Something went wrong",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -104,7 +157,7 @@ export default function Checkout() {
           </View>
         ) : (
           <TouchableOpacity
-            onPress={() => router.push("/address")}
+            onPress={() => router.push("/addresses")}
             className="bg-white p-6 rounded-xl mb-6 items-center justify-center border-dashed border-2 border-gray-100 flex-row space-x-2"
           >
             <Text className="text-primary font-bold text-lg">Add Address</Text>
