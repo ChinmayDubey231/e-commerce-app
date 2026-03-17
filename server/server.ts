@@ -11,6 +11,7 @@ import OrderRouter from "./routes/ordersRoutes.js";
 import AddressRouter from "./routes/addressRoutes.js";
 import AdminRouter from "./routes/adminRoutes.js";
 import WishlistRouter from "./routes/wishlistRoutes.js";
+// import { seedProducts } from "./scripts/seedProducts.js";
 
 const app = express();
 
@@ -25,10 +26,10 @@ app.post(
 
 // Middleware
 app.use(cors());
-app.use(express.json());
 app.use(clerkMiddleware());
+app.use(express.json());
 
-const port = process.env.PORT || 3000;
+const port = Number(process.env.PORT) || 3000;
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Server is Live!");
@@ -42,6 +43,9 @@ app.use("/api/wishlist", WishlistRouter);
 
 await makeAdmin();
 
-app.listen(port, () => {
+//Seed dummy products if no products are present
+// await seedProducts(process.env.MONGODB_URI as string);
+
+app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

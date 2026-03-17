@@ -129,11 +129,15 @@ export default function Profile() {
             {/* Logout Button */}
             <TouchableOpacity
               onPress={handleLogout}
-              className="flex-row items-center justify-center p-4"
+              activeOpacity={0.8}
+              className="mx-5 mt-6"
             >
-              <Text className="text-red-500 font-bold text-lg ml-2 bg-red-200 px-40 py-3 rounded-full">
-                Logout
-              </Text>
+              <View className="bg-red-500 py-4 rounded-2xl flex-row items-center justify-center shadow-md">
+                <Ionicons name="log-out-outline" size={22} color="white" />
+                <Text className="text-white text-lg font-semibold ml-2">
+                  Logout
+                </Text>
+              </View>
             </TouchableOpacity>
           </>
         )}

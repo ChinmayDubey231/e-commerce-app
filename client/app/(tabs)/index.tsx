@@ -1,8 +1,9 @@
-import { BANNERS, dummyProducts } from "@/assets/assets";
+import { BANNERS } from "@/assets/assets";
 import CategoryItem from "@/components/CategoryItem";
 import Header from "@/components/Header";
 import ProductCart from "@/components/ProductCart";
 import { CATEGORIES } from "@/constants";
+import api from "@/constants/api";
 import { Product } from "@/constants/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -28,8 +29,14 @@ export default function Home() {
   const categories = [{ id: "all", name: "All", icon: "grid" }, ...CATEGORIES];
 
   const fetchProducts = async () => {
-    setProducts(dummyProducts);
-    setLoading(false);
+    try {
+      const { data } = await api.get("/products");
+      setProducts(data.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
